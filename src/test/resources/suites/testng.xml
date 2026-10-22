@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Tüm testler. Çalıştır: mvn test   (tarayıcı: config.properties veya -Dbrowser=edge) -->
+<suite name="SauceDemo - Full" verbose="1">
+    <test name="All UI Tests">
+        <classes>
+            <class name="com.servet.saucedemo.tests.LoginTest"/>
+            <class name="com.servet.saucedemo.tests.InventoryTest"/>
+            <class name="com.servet.saucedemo.tests.CheckoutTest"/>
+        </classes>
+    </test>
+</suite>

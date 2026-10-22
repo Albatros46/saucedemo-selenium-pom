@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.servet</groupId>
+  <artifactId>saucedemo-selenium-pom</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>saucedemo-selenium-pom</name>
+  <description>Selenium 4 + TestNG + Page Object Model on saucedemo.com</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>21</maven.compiler.release>
+    <selenium.version>4.51.0</selenium.version>
+    <testng.version>7.12.0</testng.version>
+    <!-- mvn test -Dsuite=smoke -->
+    <suite>testng</suite>
+  </properties>
+
+  <dependencies>
+    <!-- Sayfa sınıfları src/main altında olduğu için compile scope -->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>${selenium.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>${testng.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <suiteXmlFiles>
+            <suiteXmlFile>src/test/resources/suites/${suite}.xml</suiteXmlFile>
+          </suiteXmlFiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
