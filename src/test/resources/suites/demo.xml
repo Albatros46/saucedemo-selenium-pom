@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Listener demo: 1 gerçek hata (ekran görüntüsü alınır) + 1 flaky test (retry ile geçer).
+  Bu suite BİLEREK kırmızıdır. Çalıştır: mvn test -Dsuite=demo
+-->
+<suite name="SauceDemo - Listener Demo" verbose="1">
+    <listeners>
+        <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>
+    </listeners>
+    <test name="Failure Demo">
+        <classes>
+            <class name="com.servet.saucedemo.tests.FailureDemoTest"/>
+        </classes>
+    </test>
+</suite>

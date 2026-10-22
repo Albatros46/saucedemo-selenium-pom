@@ -2,6 +2,10 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <!-- Smoke testleri 3 tarayıcıda, sırayla. Çalıştır: mvn test -Dsuite=cross-browser -->
 <suite name="SauceDemo - Cross Browser" verbose="1">
+    <listeners>
+        <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>
+    </listeners>
     <test name="Chrome">
         <parameter name="browser" value="chrome"/>
         <groups><run><include name="smoke"/></run></groups>

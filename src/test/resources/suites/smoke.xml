@@ -2,6 +2,10 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <!-- Sadece kritik akışlar. Çalıştır: mvn test -Dsuite=smoke -->
 <suite name="SauceDemo - Smoke" verbose="1">
+    <listeners>
+        <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>
+    </listeners>
     <test name="Smoke">
         <groups>
             <run>

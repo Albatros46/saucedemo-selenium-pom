@@ -44,6 +44,10 @@ public final class Config {
         return Integer.parseInt(get("pageLoadTimeoutSeconds"));
     }
 
+    public static int retryCount() {
+        return Integer.parseInt(get("retryCount"));
+    }
+
     private static Properties load() {
         try (InputStream in = Config.class.getResourceAsStream("/config.properties")) {
             if (in == null) {

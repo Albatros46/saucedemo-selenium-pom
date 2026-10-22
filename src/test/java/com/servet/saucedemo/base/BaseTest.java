@@ -36,6 +36,11 @@ public abstract class BaseTest {
         }
     }
 
+    /** Listener'ların (ör. hata anında ekran görüntüsü) tarayıcıya erişmesi için. */
+    public WebDriver getDriver() {
+        return driver;
+    }
+
     protected LoginPage openLoginPage() {
         return new LoginPage(driver).open();
     }
