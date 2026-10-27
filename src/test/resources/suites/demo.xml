@@ -4,7 +4,7 @@
   Listener demo: 1 gerçek hata (ekran görüntüsü alınır) + 1 flaky test (retry ile geçer).
   Bu suite BİLEREK kırmızıdır. Çalıştır: mvn test -Dsuite=demo
 -->
-<suite name="SauceDemo - Listener Demo" verbose="1">
+<suite name="SauceDemo - Listener Demo" parallel="methods" thread-count="2" verbose="1">
     <listeners>
         <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
         <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>

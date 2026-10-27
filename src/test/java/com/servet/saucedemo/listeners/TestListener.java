@@ -14,12 +14,13 @@ import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.Reporter;
 
-import com.servet.saucedemo.base.BaseTest;
+import com.servet.saucedemo.driver.DriverManager;
 
 /**
  * Her test olayında konsola log yazar; test başarısız olursa ekran görüntüsü alır.
  *
- * TestNG, onTestFailure'ı @AfterMethod'dan ÖNCE çağırır, yani tarayıcı bu anda hâlâ açıktır.
+ * TestNG, onTestFailure'ı @AfterMethod'dan ÖNCE ve testle AYNI thread'de çağırır.
+ * Bu yüzden DriverManager.get() burada tam olarak başarısız olan testin tarayıcısını döndürür.
  */
 public class TestListener implements ITestListener {
 
@@ -65,10 +66,10 @@ public class TestListener implements ITestListener {
 
     /** Ekran görüntüsünü target/screenshots altına kaydeder. Listener asla exception fırlatmamalı. */
     private static Path takeScreenshot(ITestResult result) {
-        if (!(result.getInstance() instanceof BaseTest test) || test.getDriver() == null) {
+        if (!DriverManager.isStarted()) {
             return null;
         }
-        WebDriver driver = test.getDriver();
+        WebDriver driver = DriverManager.get();
         String fileName = result.getTestClass().getRealClass().getSimpleName() + "_"
                 + result.getMethod().getMethodName() + "_"
                 + LocalDateTime.now().format(TIMESTAMP) + ".png";

@@ -3,6 +3,7 @@ package com.servet.saucedemo.driver;
 import java.time.Duration;
 import java.util.Map;
 
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -19,10 +20,33 @@ import com.servet.saucedemo.config.Config;
  */
 public final class DriverFactory {
 
+    /** Tarayıcı başlatma denemesi sayısı (test değil, sadece tarayıcının açılması tekrar denenir). */
+    private static final int MAX_START_ATTEMPTS = 3;
+
     private DriverFactory() {
     }
 
+    /**
+     * Paralel çalışmada (ölçüldü) Firefox, Chrome ve Edge aynı anda açılırken arada bir
+     * "SessionNotCreated ... Process unexpectedly closed" ile başlayamıyor. Bu altyapı hatasıdır,
+     * test hatası değil: sadece tarayıcıyı açmayı tekrar deneriz ve her denemeyi loglarız.
+     */
     public static WebDriver create(String browser, boolean headless) {
+        SessionNotCreatedException lastError = null;
+        for (int attempt = 1; attempt <= MAX_START_ATTEMPTS; attempt++) {
+            try {
+                return newDriver(browser, headless);
+            } catch (SessionNotCreatedException e) {
+                lastError = e;
+                System.out.printf("[%s] WARN %s could not start (attempt %d/%d): %s%n",
+                        Thread.currentThread().getName(), browser, attempt, MAX_START_ATTEMPTS,
+                        e.getMessage().lines().findFirst().orElse(""));
+            }
+        }
+        throw lastError;
+    }
+
+    private static WebDriver newDriver(String browser, boolean headless) {
         WebDriver driver = switch (browser.toLowerCase()) {
             case "chrome" -> new ChromeDriver(chromeOptions(headless));
             case "edge" -> new EdgeDriver(edgeOptions(headless));

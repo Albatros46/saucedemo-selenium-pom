@@ -3,14 +3,15 @@
 ![Java](https://img.shields.io/badge/Java-21-orange) ![Selenium](https://img.shields.io/badge/Selenium-4.51-43B02A) ![TestNG](https://img.shields.io/badge/TestNG-7.12-red) ![Browsers](https://img.shields.io/badge/Chrome%20%7C%20Edge%20%7C%20Firefox-tested-blue) ![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen)
 
 UI test automation for [saucedemo.com](https://www.saucedemo.com) with a clean Page Object Model, explicit waits only, and cross-browser runs from one `testng.xml`.
-Part of my 52-week QA Automation roadmap — **Week 6** (Page Object Model) and **Week 7** (listeners, retry, screenshots).
+Part of my 52-week QA Automation roadmap — **Week 6** (Page Object Model), **Week 7** (listeners, retry, screenshots) and **Week 8** (thread-safe parallel execution).
 
 ## Architecture
 
 ```
 src/main/java/com/servet/saucedemo/      FRAMEWORK
 ├── config/Config.java                   config.properties, overridable with -D
-├── driver/DriverFactory.java            Chrome / Edge / Firefox, headless
+├── driver/DriverFactory.java            Chrome / Edge / Firefox, headless, start retry
+├── driver/DriverManager.java            ThreadLocal<WebDriver>: one browser per thread
 └── pages/                               page objects
     ├── BasePage                         wait → click / type / read
     ├── LoginPage · InventoryPage · CartPage
@@ -57,7 +58,8 @@ assertEquals(overview.total(), overview.itemTotal() + overview.tax(), 0.001);
 |---|---|
 | `mvn test` | all 14 tests in Chrome (window visible) |
 | `mvn test -Dsuite=smoke` | 4 critical flows |
-| `mvn test -Dsuite=cross-browser` | smoke tests in Chrome, Edge and Firefox |
+| `mvn test -Dsuite=parallel` | all 14 tests in 4 threads at the same time |
+| `mvn test -Dsuite=cross-browser` | smoke tests in Chrome, Edge and Firefox at the same time |
 | `mvn test -Dbrowser=firefox -Dheadless=true` | any browser, headless |
 | `mvn test -Dsuite=demo` | listener demo: one real bug with screenshot, one flaky test passing on retry (red on purpose) |
 | `mvn test -DretryCount=0` | disable retry |
@@ -98,6 +100,55 @@ Screenshot: target/screenshots/FailureDemoTest_everyProductHasItsOwnImage_….pn
 | `flakyTestPassesOnRetry` | Simulated flaky test: fails on attempt 1, passes on attempt 2. |
 
 Note: Maven Surefire's summary reports `Skipped: 0` even though TestNG marked the two retried attempts as skipped. The listener log is the place to see retries.
+
+## Parallel execution (Week 8)
+
+### 1 · Red first: the Week 6 code run in parallel
+
+I ran the existing tests with `parallel="methods"` and 4 threads before changing anything (retry off):
+
+| Run | Result | Example failure |
+|---|---|---|
+| 1 | 6 failures, 5 skipped | `lockedOutUserSeesError` received **another test's** error message |
+| 2 | 5 failures, 4 skipped | `sortByPriceLowToHigh`: *"Error communicating with the remote browser. It may have died."* |
+
+Different tests failed in each run — the signature of shared state between threads.
+
+### 2 · Two sources of shared state, two fixes
+
+TestNG creates **one instance per test class**, so every instance field is shared by all threads running that class's methods.
+
+| Shared state | Fix |
+|---|---|
+| `protected WebDriver driver` field in `BaseTest` | `DriverManager` with `ThreadLocal<WebDriver>` — each thread gets its own browser; `quit()` also calls `remove()` |
+| `private InventoryPage inventory` field set in `@BeforeMethod` | removed; each test gets its page from a local `loggedIn()` call |
+
+The screenshot listener uses `DriverManager.get()`: TestNG calls `onTestFailure` on the same thread as the failed test, so it captures the right browser.
+
+### 3 · Green: 14/14 in 4 threads, in every run
+
+| Measurement | Sequential (`testng.xml`) | Parallel, 4 threads |
+|---|---|---|
+| Quiet machine | 37.5 s · 38.9 s | 23.6 s · 24.7 s (**~37 % faster**) |
+| Busy machine (many browser windows open) | 63.1 s · 74.5 s | 61.2 s · 40.4 s |
+
+Not 4× faster: every thread starts its own browser, the CPU is shared, and the longest test (end-to-end checkout) sets a lower bound. On a busy machine the gain shrinks or disappears.
+
+### 4 · Cross-browser at the same time — and a Firefox start problem
+
+`cross-browser.xml` now runs Chrome, Edge and Firefox in parallel (`parallel="tests"`). In 3 of the first 4 runs Firefox failed to start:
+
+```
+SessionNotCreated: Could not start a new session ... Process unexpectedly closed with status 0
+```
+
+It never happened in sequential runs. Because it fails in `@BeforeMethod`, test retry cannot help, so `DriverFactory` now retries **only the browser start** (up to 3 attempts) and logs each attempt:
+
+```
+WARN firefox could not start (attempt 1/3): Could not start a new session ...
+```
+
+Honest status: the retry path is verified with an injected failure (attempt 1 fails, attempt 2 starts Firefox, test passes). The real Firefox failure has **not reproduced** in the 9 cross-browser runs since, so I cannot yet show the fix catching it in the wild.
 
 ## A finding: where the "slow user" is actually slow
 

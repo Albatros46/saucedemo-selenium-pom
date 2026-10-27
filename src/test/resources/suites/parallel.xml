@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Tüm testler, 4 thread'de METOT bazında paralel: aynı anda 4 tarayıcı açılır.
+  Çalıştır: mvn test -Dsuite=parallel
+-->
+<suite name="SauceDemo - Parallel" parallel="methods" thread-count="4" verbose="1">
+    <listeners>
+        <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>
+    </listeners>
+    <test name="Parallel UI Tests">
+        <classes>
+            <class name="com.servet.saucedemo.tests.LoginTest"/>
+            <class name="com.servet.saucedemo.tests.InventoryTest"/>
+            <class name="com.servet.saucedemo.tests.CheckoutTest"/>
+        </classes>
+    </test>
+</suite>

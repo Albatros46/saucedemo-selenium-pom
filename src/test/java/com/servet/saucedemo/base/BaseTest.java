@@ -7,41 +7,36 @@ import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
 import com.servet.saucedemo.config.Config;
-import com.servet.saucedemo.driver.DriverFactory;
+import com.servet.saucedemo.driver.DriverManager;
 import com.servet.saucedemo.pages.LoginPage;
 
 /**
  * Her test kendi temiz tarayıcısıyla başlar ve tarayıcı test bitince kapanır.
- * Böylece bir testin bıraktığı çerez veya sepet, sonraki testi etkilemez.
  *
- * Not: 'driver' sıradan bir alan. Testleri paralel çalıştırmak için Hafta 8'de ThreadLocal'a taşıyacağız.
+ * Tarayıcı bir alanda DEĞİL, DriverManager'daki ThreadLocal'da tutulur. TestNG bir sınıfın tüm
+ * testleri için tek bir nesne kullandığından, alanda tutulan bir driver paralel testlerde
+ * thread'ler arasında paylaşılır ve testler birbirinin tarayıcısını kullanır.
  */
 public abstract class BaseTest {
-
-    protected WebDriver driver;
 
     /** Tarayıcı önceliği: testng.xml parametresi → -Dbrowser → config.properties */
     @BeforeMethod(alwaysRun = true)
     @Parameters("browser")
     public void startBrowser(@Optional String browser) {
         String chosen = (browser == null || browser.isBlank()) ? Config.browser() : browser;
-        driver = DriverFactory.create(chosen, Config.headless());
+        DriverManager.start(chosen, Config.headless());
     }
 
     @AfterMethod(alwaysRun = true)
     public void quitBrowser() {
-        if (driver != null) {
-            driver.quit();
-            driver = null;
-        }
+        DriverManager.quit();
     }
 
-    /** Listener'ların (ör. hata anında ekran görüntüsü) tarayıcıya erişmesi için. */
-    public WebDriver getDriver() {
-        return driver;
+    protected WebDriver driver() {
+        return DriverManager.get();
     }
 
     protected LoginPage openLoginPage() {
-        return new LoginPage(driver).open();
+        return new LoginPage(driver()).open();
     }
 }
