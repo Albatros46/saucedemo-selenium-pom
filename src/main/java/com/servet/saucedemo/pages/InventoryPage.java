@@ -7,6 +7,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
+import io.qameta.allure.Step;
+
 /** Ürün listesi sayfası ("Products"). */
 public class InventoryPage extends BasePage {
 
@@ -51,12 +53,14 @@ public class InventoryPage extends BasePage {
         return driver.findElements(ITEM_IMAGES).stream().map(img -> img.getAttribute("src")).toList();
     }
 
+    @Step("Sort products: {option}")
     public InventoryPage sortBy(SortOption option) {
         new Select(visible(SORT_DROPDOWN)).selectByValue(option.value);
         return this;
     }
 
     /** Ürünü ADINA göre bulup sepete ekler; listedeki sırası değişse de test kırılmaz. */
+    @Step("Add '{productName}' to cart")
     public InventoryPage addToCart(String productName) {
         click(By.xpath("//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='"
                 + productName + "']]//button[starts-with(@id,'add-to-cart')]"));
@@ -67,11 +71,13 @@ public class InventoryPage extends BasePage {
         return isDisplayed(CART_BADGE) ? Integer.parseInt(text(CART_BADGE)) : 0;
     }
 
+    @Step("Open cart")
     public CartPage openCart() {
         click(CART_LINK);
         return new CartPage(driver);
     }
 
+    @Step("Log out")
     public LoginPage logout() {
         click(MENU_BUTTON);
         // Menü kayarak açılır: link görünür ve tıklanabilir olana kadar bekle.

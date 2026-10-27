@@ -1,6 +1,9 @@
 # Maven
 target/
 
+# Allure command-line tool downloaded by allure-maven (mvn allure:report)
+.allure/
+
 # Eclipse
 .settings/
 .classpath

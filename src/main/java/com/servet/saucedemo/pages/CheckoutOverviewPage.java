@@ -5,6 +5,8 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import io.qameta.allure.Step;
+
 /** Ödeme adım 2: özet, ara toplam, vergi, toplam. */
 public class CheckoutOverviewPage extends BasePage {
 
@@ -34,6 +36,7 @@ public class CheckoutOverviewPage extends BasePage {
         return parsePrice(text(TOTAL));
     }
 
+    @Step("Finish order")
     public CheckoutCompletePage finish() {
         click(FINISH);
         return new CheckoutCompletePage(driver);

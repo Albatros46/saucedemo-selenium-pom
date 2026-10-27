@@ -12,6 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.testng.annotations.Test;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+
 import com.servet.saucedemo.base.BaseTest;
 import com.servet.saucedemo.pages.InventoryPage;
 
@@ -19,6 +22,8 @@ import com.servet.saucedemo.pages.InventoryPage;
  * Listener'ları görmek için yazılmış testler. Normal suite'lerde ÇALIŞMAZ, sadece:
  *   mvn test -Dsuite=demo
  */
+@Epic("SauceDemo shop")
+@Feature("Listener demo")
 public class FailureDemoTest extends BaseTest {
 
     private static final AtomicInteger FLAKY_ATTEMPTS = new AtomicInteger();

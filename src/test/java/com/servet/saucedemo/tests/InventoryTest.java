@@ -9,6 +9,11 @@ import java.util.List;
 
 import org.testng.annotations.Test;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+
 import com.servet.saucedemo.base.BaseTest;
 import com.servet.saucedemo.pages.InventoryPage;
 import com.servet.saucedemo.pages.InventoryPage.SortOption;
@@ -18,12 +23,15 @@ import com.servet.saucedemo.pages.InventoryPage.SortOption;
  * TestNG bu sınıftan tek bir nesne oluşturur; paralel testler aynı alana yazarsa
  * birbirlerinin sayfasını kullanırlar.
  */
+@Epic("SauceDemo shop")
+@Feature("Product list")
 public class InventoryTest extends BaseTest {
 
     private InventoryPage loggedIn() {
         return openLoginPage().loginAs(STANDARD, PASSWORD);
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Test(groups = { "smoke", "regression" })
     public void showsSixProducts() {
         assertEquals(loggedIn().productNames().size(), 6);
@@ -43,6 +51,7 @@ public class InventoryTest extends BaseTest {
         assertEquals(names, names.stream().sorted(Comparator.reverseOrder()).toList(), "İsimler Z→A olmalı");
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Test(groups = { "smoke", "regression" })
     public void addingProductsUpdatesCartBadge() {
         InventoryPage inventory = loggedIn();

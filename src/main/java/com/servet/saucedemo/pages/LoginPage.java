@@ -3,6 +3,8 @@ package com.servet.saucedemo.pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import io.qameta.allure.Step;
+
 import com.servet.saucedemo.config.Config;
 
 public class LoginPage extends BasePage {
@@ -17,6 +19,7 @@ public class LoginPage extends BasePage {
         super(driver);
     }
 
+    @Step("Open login page")
     public LoginPage open() {
         driver.get(Config.baseUrl());
         visible(LOGIN_BUTTON);
@@ -24,12 +27,14 @@ public class LoginPage extends BasePage {
     }
 
     /** Başarılı giriş → bir sonraki sayfayı döndürür (fluent page object). */
+    @Step("Log in as {username}")
     public InventoryPage loginAs(String username, String password) {
         submit(username, password);
         return new InventoryPage(driver);
     }
 
     /** Başarısız giriş → aynı sayfada kalınır. */
+    @Step("Try to log in as '{username}' (error expected)")
     public LoginPage loginExpectingError(String username, String password) {
         submit(username, password);
         return this;

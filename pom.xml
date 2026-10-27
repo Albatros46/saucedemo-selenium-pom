@@ -14,6 +14,9 @@
     <maven.compiler.release>21</maven.compiler.release>
     <selenium.version>4.51.0</selenium.version>
     <testng.version>7.12.0</testng.version>
+    <allure.version>2.35.5</allure.version>
+    <aspectj.version>1.9.26</aspectj.version>
+    <extentreports.version>5.1.2</extentreports.version>
     <!-- mvn test -Dsuite=smoke -->
     <suite>testng</suite>
   </properties>
@@ -25,10 +28,35 @@
       <artifactId>selenium-java</artifactId>
       <version>${selenium.version}</version>
     </dependency>
+    <!-- @Step ve Allure API'si sayfa sınıflarında kullanılıyor -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-java-commons</artifactId>
+      <version>${allure.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
       <version>${testng.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- TestNG sonuçlarını target/allure-results'a yazar (listener otomatik yüklenir) -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-testng</artifactId>
+      <version>${allure.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>${aspectj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.aventstack</groupId>
+      <artifactId>extentreports</artifactId>
+      <version>${extentreports.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -38,6 +66,10 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
+        <configuration>
+          <!-- @Step("... {username}") parametre adlarını okuyabilsin diye -->
+          <parameters>true</parameters>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -46,6 +78,21 @@
           <suiteXmlFiles>
             <suiteXmlFile>src/test/resources/suites/${suite}.xml</suiteXmlFile>
           </suiteXmlFiles>
+          <!-- AspectJ agent: @Step ile işaretli metot çağrılarını yakalayıp Allure raporuna adım olarak yazar -->
+          <argLine>-javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"</argLine>
+          <systemPropertyVariables>
+            <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <!-- mvn allure:report → target/site/allure-maven-plugin/index.html · mvn allure:serve → tarayıcıda açar -->
+      <plugin>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-maven</artifactId>
+        <version>2.18.0</version>
+        <configuration>
+          <reportVersion>2.46.1</reportVersion>
+          <resultsDirectory>allure-results</resultsDirectory>
         </configuration>
       </plugin>
     </plugins>

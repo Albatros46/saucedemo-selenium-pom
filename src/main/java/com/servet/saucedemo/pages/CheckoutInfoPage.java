@@ -3,6 +3,8 @@ package com.servet.saucedemo.pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import io.qameta.allure.Step;
+
 /** Ödeme adım 1: ad, soyad, posta kodu. */
 public class CheckoutInfoPage extends BasePage {
 
@@ -16,11 +18,13 @@ public class CheckoutInfoPage extends BasePage {
         super(driver);
     }
 
+    @Step("Enter customer info: {firstName} {lastName}, {postalCode}")
     public CheckoutOverviewPage continueWith(String firstName, String lastName, String postalCode) {
         fill(firstName, lastName, postalCode);
         return new CheckoutOverviewPage(driver);
     }
 
+    @Step("Enter customer info (error expected): '{firstName}' '{lastName}' '{postalCode}'")
     public CheckoutInfoPage continueExpectingError(String firstName, String lastName, String postalCode) {
         fill(firstName, lastName, postalCode);
         return this;

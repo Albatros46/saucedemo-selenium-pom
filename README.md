@@ -1,9 +1,9 @@
 # SauceDemo · Selenium 4 + TestNG + Page Object Model
 
-![Java](https://img.shields.io/badge/Java-21-orange) ![Selenium](https://img.shields.io/badge/Selenium-4.51-43B02A) ![TestNG](https://img.shields.io/badge/TestNG-7.12-red) ![Browsers](https://img.shields.io/badge/Chrome%20%7C%20Edge%20%7C%20Firefox-tested-blue) ![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen)
+![Java](https://img.shields.io/badge/Java-21-orange) ![Selenium](https://img.shields.io/badge/Selenium-4.51-43B02A) ![TestNG](https://img.shields.io/badge/TestNG-7.12-red) ![Browsers](https://img.shields.io/badge/Chrome%20%7C%20Edge%20%7C%20Firefox-tested-blue) ![Allure](https://img.shields.io/badge/report-Allure%202-orange) ![Extent](https://img.shields.io/badge/report-ExtentReports%205-blue) ![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen)
 
 UI test automation for [saucedemo.com](https://www.saucedemo.com) with a clean Page Object Model, explicit waits only, and cross-browser runs from one `testng.xml`.
-Part of my 52-week QA Automation roadmap — **Week 6** (Page Object Model), **Week 7** (listeners, retry, screenshots) and **Week 8** (thread-safe parallel execution).
+Part of my 52-week QA Automation roadmap — **Week 6** (Page Object Model), **Week 7** (listeners, retry, screenshots), **Week 8** (thread-safe parallel execution) and **Week 9** (Allure + ExtentReports).
 
 ## Architecture
 
@@ -63,6 +63,8 @@ assertEquals(overview.total(), overview.itemTotal() + overview.tax(), 0.001);
 | `mvn test -Dbrowser=firefox -Dheadless=true` | any browser, headless |
 | `mvn test -Dsuite=demo` | listener demo: one real bug with screenshot, one flaky test passing on retry (red on purpose) |
 | `mvn test -DretryCount=0` | disable retry |
+| `mvn allure:report` | Allure HTML report from the last run → `target/site/allure-maven-plugin/index.html` |
+| `mvn allure:serve` | build the Allure report and open it in the browser |
 
 No driver downloads needed: Selenium Manager (Selenium 4.6+) resolves the right driver.
 In PowerShell, quote parameters that contain dots or `#`: `mvn test "-Dtest=LoginTest#validLoginOpensProductsPage"`.
@@ -73,7 +75,10 @@ In PowerShell, quote parameters that contain dots or `#`: `mvn test "-Dtest=Logi
 src/test/java/com/servet/saucedemo/listeners/
 ├── TestListener       ITestListener: log every test event, screenshot on failure
 ├── RetryAnalyzer      IRetryAnalyzer: retry a failed test up to retryCount times (default 1)
-└── RetryTransformer   IAnnotationTransformer: attaches RetryAnalyzer to every @Test
+├── RetryTransformer   IAnnotationTransformer: attaches RetryAnalyzer to every @Test
+├── ExtentReportListener + ExtentManager   ExtentReports, one ExtentTest per thread (Week 9)
+├── AllureEnvironmentListener              environment.properties for Allure (Week 9)
+└── Screenshots        shared screenshot helper (file + Allure + Extent)
 ```
 
 All three are registered once in each suite's `<listeners>` block — no test class needs to change.
@@ -149,6 +154,38 @@ WARN firefox could not start (attempt 1/3): Could not start a new session ...
 ```
 
 Honest status: the retry path is verified with an injected failure (attempt 1 fails, attempt 2 starts Firefox, test passes). The real Firefox failure has **not reproduced** in the 9 cross-browser runs since, so I cannot yet show the fix catching it in the wild.
+
+## Reports: Allure + ExtentReports (Week 9)
+
+Every run produces two reports — no test class had to change, only page methods got `@Step` and test classes got labels.
+
+| | Allure | ExtentReports |
+|---|---|---|
+| Output | `target/allure-results` → `mvn allure:report` | `target/extent-report/index.html` (single file) |
+| Steps | `@Step` on 11 page actions, recorded by the AspectJ agent | — |
+| Grouping | `@Epic` / `@Feature` / `@Severity` | TestNG groups as categories, browser as device |
+| Screenshot on failure | attached to the failed test | embedded as Base64 |
+| Retries | retried attempts kept as separate *skipped* results | category `retried` |
+| Environment | `environment.properties` (URL, browser, Java, OS) | system info |
+
+**What a failed test looks like in Allure** (`mvn test -Dsuite=demo`):
+
+```
+Her ürünün kendi resmi olmalı → failed   (feature: Listener demo)
+   - Open login page                [passed]
+   - Log in as problem_user         [passed]
+   attachment: Screenshot on failure (image/png, 327 KB)
+```
+
+The password never appears in a step: the step text is `Log in as {username}`.
+
+**Parallel-safe.** `ExtentManager` keeps one `ExtentTest` per thread (`ThreadLocal`, the same idea as `DriverManager`). In the 4-thread run all 14 tests landed in the right entries, and Allure kept each thread's steps separate.
+
+**Allure also shows the parallel gain:** in one run the tests' durations add up to 78.6 s, but the run took 41.9 s wall time.
+
+Notes:
+- Allure Java 2.35.5 is used on purpose; 3.0 is a new major version.
+- On JDK 26 the AspectJ weaver prints a `sun.misc.Unsafe` warning. It is harmless: all steps are recorded.
 
 ## A finding: where the "slow user" is actually slow
 

@@ -8,16 +8,24 @@ import java.util.List;
 
 import org.testng.annotations.Test;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+
 import com.servet.saucedemo.base.BaseTest;
 import com.servet.saucedemo.pages.CartPage;
 import com.servet.saucedemo.pages.CheckoutInfoPage;
 import com.servet.saucedemo.pages.CheckoutOverviewPage;
 
+@Epic("SauceDemo shop")
+@Feature("Checkout")
 public class CheckoutTest extends BaseTest {
 
     private static final String BACKPACK = "Sauce Labs Backpack";
     private static final String BIKE_LIGHT = "Sauce Labs Bike Light";
 
+    @Severity(SeverityLevel.BLOCKER)
     @Test(groups = { "smoke", "regression" }, description = "Uçtan uca: giriş → sepet → ödeme → onay")
     public void completePurchase() {
         CartPage cart = openLoginPage()

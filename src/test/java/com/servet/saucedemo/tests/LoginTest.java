@@ -10,12 +10,20 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+
 import com.servet.saucedemo.base.BaseTest;
 import com.servet.saucedemo.pages.InventoryPage;
 import com.servet.saucedemo.pages.LoginPage;
 
+@Epic("SauceDemo shop")
+@Feature("Login")
 public class LoginTest extends BaseTest {
 
+    @Severity(SeverityLevel.BLOCKER)
     @Test(groups = { "smoke", "regression" }, description = "Geçerli kullanıcı ürün sayfasına ulaşır")
     public void validLoginOpensProductsPage() {
         InventoryPage inventory = openLoginPage().loginAs(STANDARD, PASSWORD);
@@ -35,6 +43,7 @@ public class LoginTest extends BaseTest {
         assertEquals(inventory.title(), "Products");
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Test(groups = "regression", description = "Kilitli kullanıcı giriş yapamaz")
     public void lockedOutUserSeesError() {
         LoginPage login = openLoginPage().loginExpectingError(LOCKED_OUT, PASSWORD);

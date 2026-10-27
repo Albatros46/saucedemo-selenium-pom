@@ -8,6 +8,8 @@
     <listeners>
         <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
         <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>
+        <listener class-name="com.servet.saucedemo.listeners.ExtentReportListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.AllureEnvironmentListener"/>
     </listeners>
     <test name="Failure Demo">
         <classes>

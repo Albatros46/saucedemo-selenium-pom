@@ -1,20 +1,18 @@
 package com.servet.saucedemo.listeners;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 import org.testng.Reporter;
 
-import com.servet.saucedemo.driver.DriverManager;
+import io.qameta.allure.Allure;
 
 /**
  * Her test olayında konsola log yazar; test başarısız olursa ekran görüntüsü alır.
@@ -64,21 +62,24 @@ public class TestListener implements ITestListener {
                 context.getSkippedTests().size()));
     }
 
-    /** Ekran görüntüsünü target/screenshots altına kaydeder. Listener asla exception fırlatmamalı. */
+    /**
+     * Ekran görüntüsünü target/screenshots altına kaydeder ve Allure raporuna ekler.
+     * Listener asla exception fırlatmamalı.
+     */
     private static Path takeScreenshot(ITestResult result) {
-        if (!DriverManager.isStarted()) {
+        byte[] png = Screenshots.capture();
+        if (png == null) {
             return null;
         }
-        WebDriver driver = DriverManager.get();
+        Allure.addAttachment("Screenshot on failure", "image/png", new ByteArrayInputStream(png), "png");
         String fileName = result.getTestClass().getRealClass().getSimpleName() + "_"
                 + result.getMethod().getMethodName() + "_"
                 + LocalDateTime.now().format(TIMESTAMP) + ".png";
         try {
-            byte[] png = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
             Files.createDirectories(SCREENSHOT_DIR);
             return Files.write(SCREENSHOT_DIR.resolve(fileName), png);
-        } catch (IOException | RuntimeException e) {
-            log("Ekran görüntüsü alınamadı: " + e.getMessage());
+        } catch (IOException e) {
+            log("Ekran görüntüsü kaydedilemedi: " + e.getMessage());
             return null;
         }
     }
