@@ -17,6 +17,9 @@
     <allure.version>2.35.5</allure.version>
     <aspectj.version>1.9.26</aspectj.version>
     <extentreports.version>5.1.2</extentreports.version>
+    <poi.version>5.5.1</poi.version>
+    <jackson.version>2.22.4</jackson.version>
+    <h2.version>2.5.252</h2.version>
     <!-- mvn test -Dsuite=smoke -->
     <suite>testng</suite>
   </properties>
@@ -57,6 +60,27 @@
       <groupId>com.aventstack</groupId>
       <artifactId>extentreports</artifactId>
       <version>${extentreports.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Test verisi: Excel (.xlsx) -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>${poi.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Test verisi: JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Test verisi: veritabanı (in-memory) -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

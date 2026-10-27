@@ -3,7 +3,9 @@ package com.servet.saucedemo.pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
+import io.qameta.allure.Param;
 import io.qameta.allure.Step;
+import io.qameta.allure.model.Parameter;
 
 import com.servet.saucedemo.config.Config;
 
@@ -28,14 +30,14 @@ public class LoginPage extends BasePage {
 
     /** Başarılı giriş → bir sonraki sayfayı döndürür (fluent page object). */
     @Step("Log in as {username}")
-    public InventoryPage loginAs(String username, String password) {
+    public InventoryPage loginAs(String username, @Param(mode = Parameter.Mode.MASKED) String password) {
         submit(username, password);
         return new InventoryPage(driver);
     }
 
     /** Başarısız giriş → aynı sayfada kalınır. */
     @Step("Try to log in as '{username}' (error expected)")
-    public LoginPage loginExpectingError(String username, String password) {
+    public LoginPage loginExpectingError(String username, @Param(mode = Parameter.Mode.MASKED) String password) {
         submit(username, password);
         return this;
     }

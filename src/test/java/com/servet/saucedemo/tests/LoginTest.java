@@ -3,6 +3,7 @@ package com.servet.saucedemo.tests;
 import static com.servet.saucedemo.base.TestUsers.LOCKED_OUT;
 import static com.servet.saucedemo.base.TestUsers.PASSWORD;
 import static com.servet.saucedemo.base.TestUsers.PERFORMANCE_GLITCH;
+import static com.servet.saucedemo.base.TestSecrets.PASSWORD_PLACEHOLDER;
 import static com.servet.saucedemo.base.TestUsers.STANDARD;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -16,6 +17,7 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 
 import com.servet.saucedemo.base.BaseTest;
+import com.servet.saucedemo.base.TestSecrets;
 import com.servet.saucedemo.pages.InventoryPage;
 import com.servet.saucedemo.pages.LoginPage;
 
@@ -55,15 +57,15 @@ public class LoginTest extends BaseTest {
     public Object[][] invalidLogins() {
         return new Object[][] {
                 { STANDARD, "wrong_password", "Username and password do not match any user in this service" },
-                { "unknown_user", PASSWORD, "Username and password do not match any user in this service" },
-                { "", PASSWORD, "Username is required" },
+                { "unknown_user", PASSWORD_PLACEHOLDER, "Username and password do not match any user in this service" },
+                { "", PASSWORD_PLACEHOLDER, "Username is required" },
                 { STANDARD, "", "Password is required" }
         };
     }
 
     @Test(dataProvider = "invalidLogins", groups = "regression", description = "Hatalı girişte doğru mesaj")
     public void invalidLoginShowsError(String username, String password, String expectedMessage) {
-        LoginPage login = openLoginPage().loginExpectingError(username, password);
+        LoginPage login = openLoginPage().loginExpectingError(username, TestSecrets.resolve(password));
 
         assertTrue(login.errorMessage().contains(expectedMessage),
                 "Beklenen: '" + expectedMessage + "', gelen: '" + login.errorMessage() + "'");

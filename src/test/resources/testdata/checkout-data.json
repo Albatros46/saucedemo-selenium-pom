@@ -1,0 +1,35 @@
+{
+  "taxRate": 0.08,
+  "orders": [
+    {
+      "name": "single item",
+      "customer": { "firstName": "Ayse", "lastName": "Yilmaz", "postalCode": "10115" },
+      "products": [
+        { "name": "Sauce Labs Onesie", "price": 7.99 }
+      ],
+      "expected": { "itemTotal": 7.99, "tax": 0.64, "total": 8.63 }
+    },
+    {
+      "name": "two items",
+      "customer": { "firstName": "Mehmet", "lastName": "Demir", "postalCode": "80331" },
+      "products": [
+        { "name": "Sauce Labs Backpack", "price": 29.99 },
+        { "name": "Sauce Labs Bike Light", "price": 9.99 }
+      ],
+      "expected": { "itemTotal": 39.98, "tax": 3.20, "total": 43.18 }
+    },
+    {
+      "name": "whole catalogue (6 items)",
+      "customer": { "firstName": "Elif", "lastName": "Kaya", "postalCode": "50667" },
+      "products": [
+        { "name": "Sauce Labs Backpack", "price": 29.99 },
+        { "name": "Sauce Labs Bike Light", "price": 9.99 },
+        { "name": "Sauce Labs Bolt T-Shirt", "price": 15.99 },
+        { "name": "Sauce Labs Fleece Jacket", "price": 49.99 },
+        { "name": "Sauce Labs Onesie", "price": 7.99 },
+        { "name": "Test.allTheThings() T-Shirt (Red)", "price": 15.99 }
+      ],
+      "expected": { "itemTotal": 129.94, "tax": 10.40, "total": 140.34 }
+    }
+  ]
+}

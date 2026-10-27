@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Veriden üretilen testler: Excel, JSON ve veritabanı. DataProvider satırları 3 thread'de paralel.
+  Çalıştır: mvn test -Dsuite=datadriven
+-->
+<suite name="SauceDemo - Data-driven" data-provider-thread-count="3" verbose="1">
+    <listeners>
+        <listener class-name="com.servet.saucedemo.listeners.TestListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.RetryTransformer"/>
+        <listener class-name="com.servet.saucedemo.listeners.ExtentReportListener"/>
+        <listener class-name="com.servet.saucedemo.listeners.AllureEnvironmentListener"/>
+    </listeners>
+    <test name="Data-driven Tests">
+        <classes>
+            <class name="com.servet.saucedemo.tests.datadriven.DataReadersTest"/>
+            <class name="com.servet.saucedemo.tests.datadriven.LoginExcelTest"/>
+            <class name="com.servet.saucedemo.tests.datadriven.CheckoutJsonTest"/>
+            <class name="com.servet.saucedemo.tests.datadriven.UsersDbTest"/>
+        </classes>
+    </test>
+</suite>

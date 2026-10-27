@@ -3,7 +3,7 @@
 ![Java](https://img.shields.io/badge/Java-21-orange) ![Selenium](https://img.shields.io/badge/Selenium-4.51-43B02A) ![TestNG](https://img.shields.io/badge/TestNG-7.12-red) ![Browsers](https://img.shields.io/badge/Chrome%20%7C%20Edge%20%7C%20Firefox-tested-blue) ![Allure](https://img.shields.io/badge/report-Allure%202-orange) ![Extent](https://img.shields.io/badge/report-ExtentReports%205-blue) ![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen)
 
 UI test automation for [saucedemo.com](https://www.saucedemo.com) with a clean Page Object Model, explicit waits only, and cross-browser runs from one `testng.xml`.
-Part of my 52-week QA Automation roadmap — **Week 6** (Page Object Model), **Week 7** (listeners, retry, screenshots), **Week 8** (thread-safe parallel execution) and **Week 9** (Allure + ExtentReports).
+Part of my 52-week QA Automation roadmap — **Week 6** (Page Object Model), **Week 7** (listeners, retry, screenshots), **Week 8** (thread-safe parallel execution), **Week 9** (Allure + ExtentReports) and **Week 11** (data-driven tests).
 
 ## Architecture
 
@@ -61,6 +61,7 @@ assertEquals(overview.total(), overview.itemTotal() + overview.tax(), 0.001);
 | `mvn test -Dsuite=parallel` | all 14 tests in 4 threads at the same time |
 | `mvn test -Dsuite=cross-browser` | smoke tests in Chrome, Edge and Firefox at the same time |
 | `mvn test -Dbrowser=firefox -Dheadless=true` | any browser, headless |
+| `mvn test -Dsuite=datadriven` | 20 tests driven by Excel, JSON and an H2 database |
 | `mvn test -Dsuite=demo` | listener demo: one real bug with screenshot, one flaky test passing on retry (red on purpose) |
 | `mvn test -DretryCount=0` | disable retry |
 | `mvn allure:report` | Allure HTML report from the last run → `target/site/allure-maven-plugin/index.html` |
@@ -177,7 +178,7 @@ Her ürünün kendi resmi olmalı → failed   (feature: Listener demo)
    attachment: Screenshot on failure (image/png, 327 KB)
 ```
 
-The password never appears in a step: the step text is `Log in as {username}`.
+**Correction (Week 11):** I first wrote here that the password never appears in a step because the step text is `Log in as {username}`. That was wrong — `@Step` also records **every method argument** as a step parameter, so the password was in the Allure results all along. See *Keeping the password out of every report* below for the fix.
 
 **Parallel-safe.** `ExtentManager` keeps one `ExtentTest` per thread (`ThreadLocal`, the same idea as `DriverManager`). In the 4-thread run all 14 tests landed in the right entries, and Allure kept each thread's steps separate.
 
@@ -186,6 +187,45 @@ The password never appears in a step: the step text is `Log in as {username}`.
 Notes:
 - Allure Java 2.35.5 is used on purpose; 3.0 is a new major version.
 - On JDK 26 the AspectJ weaver prints a `sun.misc.Unsafe` warning. It is harmless: all steps are recorded.
+
+## Data-driven tests: Excel, JSON, database (Week 11)
+
+```
+src/test/resources/testdata/
+├── login-data.xlsx       7 login cases (+1 row with run = N, skipped)       → Apache POI
+├── checkout-data.json    3 orders: products, customer, expected totals      → Jackson
+└── users.sql             saucedemo users loaded into an in-memory H2 DB     → JDBC
+src/test/java/com/servet/saucedemo/data/
+└── ExcelReader · JsonReader · DbReader · TestDataProviders (parallel = true)
+```
+
+| Test | Source | Rows | What is checked |
+|---|---|---|---|
+| `LoginExcelTest` | Excel | 7 | success → "Products", otherwise the exact error message |
+| `CheckoutJsonTest` | JSON | 3 | cart items, every item price, subtotal, 8 % tax, total, order confirmation |
+| `UsersDbTest` | H2 database | 6 | users who may log in do; the locked user gets the expected message |
+| `DataReadersTest` | — | 4 | readers work **and the test data itself is consistent** (no browser, < 1 s) |
+
+A new scenario is a new row — no Java change. Expected values come from the data file, not from the code. `DataReadersTest` checks the data first: a UI test built on wrong data "verifies" the wrong thing.
+
+Result: **20/20 green**, data rows spread over 3 threads.
+
+### Keeping the password out of every report
+
+While checking the Allure results I found the demo password (`secret_sauce`) in 14 result files: as a DataProvider parameter and as a `@Step` parameter of `loginAs`. Masking alone was not enough:
+
+| Attempt | Result |
+|---|---|
+| `@Param(mode = MASKED)` on the **test** method | ignored by allure-testng |
+| `@Param(mode = MASKED)` on the **step** method | the report UI shows `******`, but the **real value stays in the JSON files** |
+
+The fix works at the source, with a second layer behind it:
+
+1. **No secrets in test data.** Excel, the database and `LoginTest`'s DataProvider contain only `{{password}}`. `TestSecrets.resolve()` turns it into the real value at run time — from the `SAUCE_PASSWORD` environment variable (a CI secret) or the public demo password.
+2. **`MaskedParameterScrubber`** (an Allure `TestLifecycleListener`) replaces every masked step parameter with `******` *before* the result file is written.
+3. Extent names data-driven tests by their first parameter only (`loginFromExcel [locked out user]`).
+
+Verified: after running `testng` (14) and `datadriven` (20), **0 files** under `target/` (Allure, Extent, TestNG and Surefire reports) contain the password.
 
 ## A finding: where the "slow user" is actually slow
 

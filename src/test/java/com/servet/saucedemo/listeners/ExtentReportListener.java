@@ -1,6 +1,5 @@
 package com.servet.saucedemo.listeners;
 
-import java.util.Arrays;
 import java.util.Base64;
 
 import org.testng.IExecutionListener;
@@ -65,7 +64,9 @@ public class ExtentReportListener implements ITestListener, IExecutionListener {
 
     private static String name(ITestResult result) {
         String name = result.getTestClass().getRealClass().getSimpleName() + "." + result.getMethod().getMethodName();
-        return result.getParameters().length == 0 ? name : name + " " + Arrays.toString(result.getParameters());
+        // DataProvider'larda ilk parametre okunabilir senaryo adıdır (case / sipariş / kullanıcı).
+        // Tüm parametreleri yazmak, bir gün şifre gibi bir değeri rapora sızdırabilir.
+        return result.getParameters().length == 0 ? name : name + " [" + result.getParameters()[0] + "]";
     }
 
     private static String browser(ITestResult result) {
