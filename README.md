@@ -237,6 +237,3 @@ I expected `performance_glitch_user` to need the explicit wait. Measurements sai
 | 10 s | ✅ 9.0 s | ✅ 4.2 s |
 
 The 5-second delay happens **inside the login click**: the site's JavaScript keeps the browser busy, and Selenium's `click()` returns only when that work is done. By then the page is ready. Lesson: measure before explaining a flaky or slow test.
-
-## What I learned
-- _TODO: 2–3 sentences in your own words_
